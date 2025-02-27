@@ -29,40 +29,55 @@
 <body>
     <div class="container" id="container"></div>
     <script>
-        // script.js
-            const container = document.getElementById('container');
+        const container = document.getElementById('container');
 
-            // 设置图片加载函数
-            function loadImage(data) {
+        // 设置图片加载函数
+        async function loadImage(data) {
+            const imageUrl = data.imageURL;
+
+            try {
+                // 使用 fetch 检查图片的 HTTP 状态码
+                const response = await fetch(imageUrl);
+
+                // 如果状态码不是200，跳过这张图片
+                if (!response.ok) {
+                    console.log(`图片加载失败，状态码: ${response.status}`);
+                    return;
+                }
+
+                // 图片加载成功后，创建 img 元素
                 const image = document.createElement('div');
                 image.className = 'image';
                 const img = document.createElement('img');
-                img.src = data.imageURL;
+                img.src = imageUrl;
                 image.appendChild(img);
                 container.appendChild(image);
+            } catch (error) {
+                console.log('请求图片时发生错误:', error);
             }
+        }
 
-            // 设置请求函数
-            function requestData() {
-                const eventSource = new EventSource('https://image.pollinations.ai/feed');
+        // 设置请求函数
+        function requestData() {
+            const eventSource = new EventSource('https://image.pollinations.ai/feed');
 
-                eventSource.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    // 加载图片
-                    loadImage(data);
-                };
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                // 加载图片
+                loadImage(data);
+            };
 
-                eventSource.onerror = () => {
-                    console.log('请求错误');
-                };
+            eventSource.onerror = () => {
+                console.log('请求错误');
+            };
 
-                eventSource.onopen = () => {
-                    console.log('请求连接打开');
-                };
-            }
+            eventSource.onopen = () => {
+                console.log('请求连接打开');
+            };
+        }
 
-            // 开始请求
-            requestData();
+        // 开始请求
+        requestData();
     </script>
 </body>
 
